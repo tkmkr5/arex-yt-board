@@ -1,9 +1,25 @@
 {
  "version": 1,
- "rev": "mwudx47flgghr9",
- "updatedAt": "2026-11-24T07:40:10.251Z",
+ "rev": "mwue67a99gog07",
+ "updatedAt": "2026-11-24T07:47:14.145Z",
  "updatedBy": "AReX",
- "plans": [],
+ "plans": [
+  {
+   "id": "mwue66l6plevpe",
+   "createdAt": "2026-11-24T07:47:13.242Z",
+   "title": "テスト配信",
+   "type": "normal",
+   "status": "公開済",
+   "shootDate": "2026-11-17",
+   "editDate": "2026-11-22",
+   "postDate": "2026-11-24",
+   "memo": "テスト。こんにちは",
+   "good": "こんにちは",
+   "improve": "ありがとう",
+   "updatedAt": "2026-11-24T07:47:13.243Z",
+   "updatedBy": "AReX"
+  }
+ ],
  "videoStats": [],
  "channelStats": []
 }
