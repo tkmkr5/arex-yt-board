@@ -1,25 +1,9 @@
 {
  "version": 1,
- "rev": "mwuds1lt1ljkwf",
- "updatedAt": "2026-11-24T07:36:13.601Z",
+ "rev": "mwudx47flgghr9",
+ "updatedAt": "2026-11-24T07:40:10.251Z",
  "updatedBy": "AReX",
- "plans": [
-  {
-   "id": "mwuds0wr3j4dhv",
-   "createdAt": "2026-11-24T07:36:12.699Z",
-   "title": "テスト企画（削除してOK）",
-   "type": "normal",
-   "status": "企画確定",
-   "shootDate": "",
-   "editDate": "",
-   "postDate": "2026-11-28",
-   "memo": "GitHub Pages公開後の保存テスト。消してかまいません。",
-   "good": "",
-   "improve": "",
-   "updatedAt": "2026-11-24T07:36:12.699Z",
-   "updatedBy": "AReX"
-  }
- ],
+ "plans": [],
  "videoStats": [],
  "channelStats": []
 }
