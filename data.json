@@ -1,7 +1,7 @@
 {
  "version": 1,
- "rev": "mwue6cinsm4oyf",
- "updatedAt": "2026-11-24T07:47:20.927Z",
+ "rev": "mwue6y9k1fagdu",
+ "updatedAt": "2026-11-24T07:47:49.112Z",
  "updatedBy": "AReX",
  "plans": [
   {
@@ -20,6 +20,21 @@
    "updatedBy": "AReX"
   }
  ],
- "videoStats": [],
+ "videoStats": [
+  {
+   "id": "mwue6xkgeqrjlr",
+   "planId": "mwue66l6plevpe",
+   "date": "2026-11-24",
+   "views": 100000,
+   "likes": 100,
+   "comments": 100,
+   "retention": 100,
+   "ctr": 100,
+   "impressions": 100,
+   "subsDelta": 100,
+   "updatedAt": "2026-11-24T07:47:48.208Z",
+   "updatedBy": "AReX"
+  }
+ ],
  "channelStats": []
 }
