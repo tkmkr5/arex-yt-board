@@ -149,6 +149,19 @@ summary{cursor:pointer;color:var(--ink2);font-size:12px}
 .rv h4{margin:0;font-size:12px;color:var(--ink2);font-weight:600}
 .rv p{margin:2px 0 0;white-space:pre-wrap;word-break:break-word}
 
+/* notes（議事録） */
+.search{font-size:14px;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 10px;width:min(100%,260px)}
+.notes{display:grid;gap:10px}
+.nc{display:block;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 16px;cursor:pointer;box-shadow:var(--shadow)}
+.nc:hover{border-color:var(--ink3)}
+.nc .nh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.nc .nh b{font-size:15px;word-break:break-word}
+.nc .nb{color:var(--ink2);font-size:13px;margin:6px 0 2px;white-space:pre-wrap;word-break:break-word;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.nbody{white-space:pre-wrap;word-break:break-word;line-height:1.7;max-height:60vh;overflow:auto;padding:12px 14px;background:var(--sunken);border-radius:8px}
+mark{background:var(--warn);color:#0b0b0b;border-radius:2px;padding:0 1px}
+label.f textarea.big{min-height:260px}
+dialog.wide{width:min(760px,calc(100vw - 24px))}
+
 /* dialog */
 dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:0;width:min(560px,calc(100vw - 24px));max-height:calc(100vh - 24px);box-shadow:0 20px 60px rgba(0,0,0,.25)}
 dialog::backdrop{background:rgba(0,0,0,.4)}
@@ -192,8 +205,8 @@ body.ro .pc{cursor:pointer}
 const STATUSES=['アイデア','企画確定','撮影済','編集中','投稿予約','公開済'];
 const TYPES={normal:'通常',short:'ショート',live:'ライブ'};
 const KINDS={shoot:['撮影','撮','shootDate'],edit:['編集','編','editDate'],post:['投稿','投','postDate']};
-const VIEWS=[['dash','ダッシュボード'],['plans','企画'],['cal','スケジュール'],['stats','数字'],['an','分析']];
-const COLS=['plans','videoStats','channelStats'];
+const VIEWS=[['dash','ダッシュボード'],['plans','企画'],['cal','スケジュール'],['stats','数字'],['an','分析'],['notes','議事録']];
+const COLS=['plans','videoStats','channelStats','minutes'];
 const DOW=['日','月','火','水','木','金','土'];
 
 /* ===== 状態 ===== */
@@ -202,7 +215,7 @@ const REPO='';
 const DATA_FILE='data.json';
 let db=emptyDb(), readOnly=true, token='', sha='', uidMe='', dirty=false, pushing=false, pushTimer=0, rev='';
 const LS={get(k){try{return localStorage.getItem(k)||''}catch(e){return''}},set(k,v){try{v?localStorage.setItem(k,v):localStorage.removeItem(k)}catch(e){}}};
-const ui={view:'dash',planType:'all',statTab:'video',statType:'all',anType:'all',cal:null};
+const ui={view:'dash',planType:'all',statTab:'video',statType:'all',anType:'all',cal:null,noteQ:''};
 
 /* ===== ユーティリティ ===== */
 const $=s=>document.querySelector(s);
@@ -215,6 +228,7 @@ const today=()=>ymd(new Date());
 const toDate=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
 const dayDiff=(a,b)=>Math.round((toDate(b)-toDate(a))/864e5);
 const fmtD=s=>{if(!s)return'—';const d=toDate(s);return`${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]})`};
+const fmtDY=s=>{if(!s)return'—';const d=toDate(s);return`${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}(${DOW[d.getDay()]})`};
 const fmtDT=s=>{if(!s)return'';const d=new Date(s);return`${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`};
 const num=v=>v==null?'—':Number(v).toLocaleString('ja-JP');
 const pct=v=>v==null?'—':Number(v).toLocaleString('ja-JP',{maximumFractionDigits:1})+'%';
@@ -222,7 +236,7 @@ const signed=v=>v==null?'—':(v>0?'+':'')+Number(v).toLocaleString('ja-JP');
 const compact=v=>new Intl.NumberFormat('ja-JP',{notation:'compact',maximumFractionDigits:1}).format(v);
 const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
 const round1=v=>v==null?null:Math.round(v*10)/10;
-function emptyDb(){return{plans:[],videoStats:[],channelStats:[]}}
+function emptyDb(){return Object.fromEntries(COLS.map(c=>[c,[]]))}
 function normalize(o){const d=emptyDb();if(o&&typeof o==='object')for(const k of COLS)if(Array.isArray(o[k]))d[k]=o[k].filter(x=>x&&typeof x==='object'&&x.id);return d}
 function toast(msg,ms=3500){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,ms)}
 function setSync(s,text){const e=$('#sync');e.dataset.s=s;e.textContent=text}
@@ -298,7 +312,7 @@ function render(){
   $('#editBtn').textContent=readOnly?'編集する':'編集を終了';document.body.classList.toggle('ro',readOnly);
   document.querySelectorAll('#nav button').forEach(b=>b.dataset.view===ui.view?b.setAttribute('aria-current','page'):b.removeAttribute('aria-current'));
   const m=$('#main');
-  m.innerHTML=({dash:vDash,plans:vPlans,cal:vCal,stats:vStats,an:vAn})[ui.view]();
+  m.innerHTML=({dash:vDash,plans:vPlans,cal:vCal,stats:vStats,an:vAn,notes:vNotes})[ui.view]();
   if(ui.view==='an')drawAnalysis()}
 function seg(key,opts){return`<div class="seg">${opts.map(([v,l])=>`<button data-seg="${key}" data-val="${v}" aria-pressed="${ui[key]===v}">${l}</button>`).join('')}</div>`}
 const TYPE_OPTS=[['all','すべて'],['normal','通常'],['short','ショート'],['live','ライブ']];
@@ -420,6 +434,21 @@ function drawAnalysis(){
   const has=dw.some(a=>a.length);
   chart($('#c-dow'),{type:'bar',title:'投稿曜日ごとの平均再生数',labels:has?DOW.map((d,i)=>`${d}曜（${dw[i].length}本）`):[],values:has?dw.map(a=>Math.round(avg(a)||0)):[],axis:DOW,fmt:x=>num(x)+' 回'})}
 
+/* --- 議事録 --- */
+function hl(text,q){const s=String(text??'');if(!q)return esc(s);const L=s.toLowerCase(),out=[];let i=0;for(;;){const j=L.indexOf(q,i);if(j<0){out.push(esc(s.slice(i)));break}out.push(esc(s.slice(i,j)),'<mark>',esc(s.slice(j,j+q.length)),'</mark>');i=j+q.length}return out.join('')}
+function noteRows(){const q=ui.noteQ.trim().toLowerCase();
+  return[...db.minutes].filter(n=>!q||((n.title||'')+'\n'+(n.body||'')).toLowerCase().includes(q))
+    .sort((a,b)=>(a.date||'')!==(b.date||'')?((a.date||'')<(b.date||'')?1:-1):((a.updatedAt||'')<(b.updatedAt||'')?1:-1))}
+function noteCard(n,q){let b=n.body||'';if(q){const i=b.toLowerCase().indexOf(q);if(i>80)b='…'+b.slice(i-40)}
+  return`<button class="nc" data-act="note" data-id="${esc(n.id)}"><div class="nh"><span class="sub num">${fmtDY(n.date)}</span><b>${n.title?hl(n.title,q):'<span class="sub">無題</span>'}</b></div>${b?`<div class="nb">${hl(b,q)}</div>`:''}<div class="sub" style="margin-top:6px">${esc(nameOf(n.updatedBy))} ${fmtDT(n.updatedAt)}</div></button>`}
+function noteList(){const q=ui.noteQ.trim().toLowerCase(),list=noteRows();
+  if(!list.length)return`<p class="empty">${q?`「${esc(ui.noteQ.trim())}」に一致する議事録はありません。`:'まだ議事録がありません。'+(readOnly?'':'「＋ 議事録を追加」から、会議の内容を自由に書き残せます。')}</p>`;
+  return list.map(n=>noteCard(n,q)).join('')}
+function vNotes(){
+  return`<div class="head"><h2>議事録</h2><input class="search" type="search" id="noteQ" placeholder="キーワードで探す" aria-label="議事録を検索" value="${esc(ui.noteQ)}"><button class="btn pri" data-act="note-new">＋ 議事録を追加</button></div>
+  <p class="sub" style="margin:-8px 0 12px">${readOnly?'クリックすると全文を読めます。':'会議ごとに1件。クリックで開いて編集できます。'}${db.minutes.length?`（全${db.minutes.length}件）`:''}</p>
+  <div class="notes" id="noteList">${noteList()}</div>`}
+
 /* ===== グラフ（SVG） ===== */
 function ticks(max){if(!(max>0))max=1;const raw=max/4,p=10**Math.floor(Math.log10(raw)),s=[1,2,2.5,5,10].find(k=>k*p>=raw)*p,n=Math.ceil(max/s-1e-9);return Array.from({length:n+1},(_,i)=>+(i*s).toPrecision(12))}
 function chart(el,o){
@@ -450,7 +479,7 @@ function chart(el,o){
 
 /* ===== ダイアログ ===== */
 let dlgSubmit=null;
-function openDlg(html,onSubmit){const d=$('#dlg');d.innerHTML=`<form method="dialog">${html}</form>`;dlgSubmit=onSubmit;if(readOnly&&!d.querySelector('[name=token]')){d.querySelectorAll('input,select,textarea').forEach(x=>x.disabled=true);d.querySelectorAll('.pri,.danger').forEach(x=>x.remove());const c=d.querySelector('[data-act=close]');if(c)c.textContent='閉じる'}if(!d.open)d.showModal()}
+function openDlg(html,onSubmit){const d=$('#dlg');d.classList.remove('wide');d.innerHTML=`<form method="dialog">${html}</form>`;dlgSubmit=onSubmit;if(readOnly&&!d.querySelector('[name=token]')){d.querySelectorAll('input,select,textarea').forEach(x=>x.disabled=true);d.querySelectorAll('.pri,.danger').forEach(x=>x.remove());const c=d.querySelector('[data-act=close]');if(c)c.textContent='閉じる'}if(!d.open)d.showModal()}
 $('#dlg').addEventListener('submit',e=>{e.preventDefault();const fd=new FormData(e.target);const f=dlgSubmit;$('#dlg').close();f&&f(fd)});
 const nval=(fd,k)=>{const v=(fd.get(k)||'').trim();if(v==='')return null;const n=Number(v);return Number.isFinite(n)?n:null};
 const meta=o=>o&&o.updatedAt?`<span class="sub">最終更新：${esc(nameOf(o.updatedBy))} ${fmtDT(o.updatedAt)}</span>`:'';
@@ -514,6 +543,23 @@ function dlgChannel(id){
       stamp(t);if(!id)db.channelStats.push(t);save('channelStats',t)});
   $('#dlg').dataset.del='channelStats'}
 
+function dlgNote(id){
+  const n=id?db.minutes.find(x=>x.id===id):{date:today(),title:'',body:''};if(!n)return;
+  openDlg(readOnly?`<h3>${n.title?esc(n.title):'議事録'}</h3><p class="sub num" style="margin:-6px 0 0">${fmtDY(n.date)}</p>
+    <div class="nbody">${n.body?esc(n.body):'<span class="sub">本文はありません。</span>'}</div>
+    <div class="acts">${meta(n)}<span class="sp"></span><button type="button" class="btn" data-act="close">閉じる</button></div>`
+  :`<h3>${id?'議事録を編集':'議事録を追加'}</h3>
+    <div class="row">
+      <label class="f">日付<input type="date" name="date" required value="${esc(n.date)}"></label>
+      <label class="f">タイトル（任意）<input name="title" maxlength="120" value="${esc(n.title)}" placeholder="例：11月の定例、企画会議"></label>
+    </div>
+    <label class="f">本文（自由記述）<textarea name="body" class="big" placeholder="決まったこと、話したこと、次にやること、担当など、自由に書けます。">${esc(n.body)}</textarea></label>
+    <div class="acts">${delBtn(id)}${meta(n)}<span class="sp"></span><button type="button" class="btn" data-act="close">キャンセル</button><button class="btn pri">保存</button></div>`,
+    fd=>{const t=id?db.minutes.find(x=>x.id===id):{id:uid(),createdAt:nowIso()};if(!t)return;
+      t.date=fd.get('date')||today();t.title=(fd.get('title')||'').trim();t.body=(fd.get('body')||'').replace(/\r\n/g,'\n').trimEnd();
+      stamp(t);if(!id)db.minutes.push(t);save('minutes',t)});
+  $('#dlg').classList.add('wide');$('#dlg').dataset.del='minutes'}
+
 /* ===== イベント ===== */
 document.addEventListener('click',e=>{
   const v=e.target.closest('[data-view]');if(v){ui.view=v.dataset.view;try{location.hash=ui.view}catch(e){}render();window.scrollTo(0,0);return}
@@ -525,12 +571,15 @@ document.addEventListener('click',e=>{
     case'plan':dlgPlan(id);break;case'plan-new':dlgPlan(null);break;
     case'vs':dlgVideoStat(id);break;case'vs-new':dlgVideoStat(null);break;
     case'ch':dlgChannel(id);break;case'ch-new':dlgChannel(null);break;
+    case'note':dlgNote(id);break;case'note-new':dlgNote(null);break;
     case'cal':{const d=+a.dataset.d;if(!d){const n=new Date();ui.cal=[n.getFullYear(),n.getMonth()]}else{const n=new Date(ui.cal[0],ui.cal[1]+d,1);ui.cal=[n.getFullYear(),n.getMonth()]}render();break}
     case'del':{if(a.dataset.sure){const col=$('#dlg').dataset.del;remove(col,id);
         if(col==='plans')for(const s of db.videoStats.filter(s=>s.planId===id))remove('videoStats',s.id);
         $('#dlg').close();render()}
       else{a.dataset.sure='1';a.textContent=$('#dlg').dataset.del==='plans'?'もう一度押すと削除（この動画の数字も消えます）':'もう一度押すと削除'}break}
   }});
+/* 議事録の検索（入力中はリストだけ描き直す） */
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='noteQ'){ui.noteQ=e.target.value;const l=$('#noteList');if(l)l.innerHTML=noteList()}});
 /* カンバンのドラッグ＆ドロップ */
 document.addEventListener('dragstart',e=>{const c=e.target.closest&&e.target.closest('.pc');if(c){e.dataTransfer.setData('text/plain',c.dataset.id);e.dataTransfer.effectAllowed='move'}});
 document.addEventListener('dragover',e=>{const c=e.target.closest&&e.target.closest('.col');if(c){e.preventDefault();document.querySelectorAll('.col.over').forEach(x=>x!==c&&x.classList.remove('over'));c.classList.add('over')}});
