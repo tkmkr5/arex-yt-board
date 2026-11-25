@@ -1,41 +1,10 @@
 {
  "version": 1,
- "rev": "mwvtfrzsdxxkwl",
- "updatedAt": "2026-11-25T07:42:21.304Z",
+ "rev": "mwvtg1aiqv89i7",
+ "updatedAt": "2026-11-25T07:42:33.354Z",
  "updatedBy": "AReX",
- "plans": [
-  {
-   "id": "mwue66l6plevpe",
-   "createdAt": "2026-11-24T07:47:13.242Z",
-   "title": "テスト配信",
-   "type": "normal",
-   "status": "公開済",
-   "shootDate": "2026-11-17",
-   "editDate": "2026-11-22",
-   "postDate": "2026-11-24",
-   "memo": "テスト。こんにちは",
-   "good": "こんにちは",
-   "improve": "ありがとう",
-   "updatedAt": "2026-11-24T07:47:20.025Z",
-   "updatedBy": "AReX"
-  }
- ],
- "videoStats": [
-  {
-   "id": "mwue6xkgeqrjlr",
-   "planId": "mwue66l6plevpe",
-   "date": "2026-11-24",
-   "views": 100000,
-   "likes": 100,
-   "comments": 100,
-   "retention": 100,
-   "ctr": 100,
-   "impressions": 100,
-   "subsDelta": 100,
-   "updatedAt": "2026-11-24T07:47:48.208Z",
-   "updatedBy": "AReX"
-  }
- ],
+ "plans": [],
+ "videoStats": [],
  "channelStats": [
   {
    "id": "mwue7bdousknyh",
