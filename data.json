@@ -1,7 +1,7 @@
 {
  "version": 1,
- "rev": "mwue7c2qvozise",
- "updatedAt": "2026-11-24T07:48:07.010Z",
+ "rev": "mwvtfrzsdxxkwl",
+ "updatedAt": "2026-11-25T07:42:21.304Z",
  "updatedBy": "AReX",
  "plans": [
   {
@@ -43,6 +43,17 @@
    "subscribers": 10000,
    "totalViews": 10000,
    "updatedAt": "2026-11-24T07:48:06.108Z",
+   "updatedBy": "AReX"
+  }
+ ],
+ "minutes": [
+  {
+   "id": "mwvtfraqlc96qs",
+   "createdAt": "2026-11-25T07:42:20.402Z",
+   "date": "2026-11-25",
+   "title": "初回会議",
+   "body": "年内チャンネル登録者数５００人\n\nキャッシュポイント\n案件・広告収益・スパチャ・スポンサー・メンバーシップ・グッズ販売・ファンミーティング\n\n企画：\nスマブラ\nシゲに勝つまで系：VIPにいくまで系：\nポケモン\nレート戦がある\n\nシゲ：\nいいプレイ集（切り抜き）\nスマブラ→コンボ\nマリカ→悲劇系\nポケモン→色違い",
+   "updatedAt": "2026-11-25T07:42:20.402Z",
    "updatedBy": "AReX"
   }
  ]
